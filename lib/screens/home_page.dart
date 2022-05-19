@@ -30,8 +30,7 @@ class _HomePageState extends State<HomePage> {
             return ListView.builder(
               itemBuilder: (context, index) {
                 final doc = snapshot.data!.docs[index].data();
-                final timeStamp = doc['createdAt'] as Timestamp;
-                return Text('${timeStamp.toDate()}');
+                return Text('${doc}');
               },
               itemCount: snapshot.data!.size,
             );

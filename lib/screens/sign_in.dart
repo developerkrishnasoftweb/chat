@@ -1,5 +1,7 @@
+import 'package:chat/screens/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({Key? key}) : super(key: key);
@@ -21,16 +23,22 @@ class _SignInState extends State<SignIn> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            TextFormField(
-              controller: _nameCtrl,
-              decoration: const InputDecoration(
-                hintText: 'Name',
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                controller: _nameCtrl,
+                decoration: const InputDecoration(
+                  hintText: 'Name',
+                ),
               ),
             ),
-            TextFormField(
-              controller: _mobileCtrl,
-              decoration: const InputDecoration(
-                hintText: 'Mobile',
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                controller: _mobileCtrl,
+                decoration: const InputDecoration(
+                  hintText: 'Mobile',
+                ),
               ),
             ),
             TextButton(
@@ -44,6 +52,8 @@ class _SignInState extends State<SignIn> {
   }
 
   void _signIn() async {
-    // FirebaseFirestore.instance.collection('users').doc().update(data);
+    // final ref = await FirebaseFirestore.instance.collection('users').add({'name': 'gaurav'});
+    // print(ref.id);
+    Get.to(const HomePage());
   }
 }
