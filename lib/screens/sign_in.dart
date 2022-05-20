@@ -1,7 +1,9 @@
+import 'package:chat/constants/app_constants.dart';
+import 'package:chat/models/user_model.dart';
 import 'package:chat/screens/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({Key? key}) : super(key: key);
@@ -12,7 +14,7 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   final TextEditingController _nameCtrl = TextEditingController();
-  final TextEditingController _mobileCtrl = TextEditingController();
+  final TextEditingController _phoneNumber = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +37,9 @@ class _SignInState extends State<SignIn> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextFormField(
-                controller: _mobileCtrl,
+                controller: _phoneNumber,
                 decoration: const InputDecoration(
-                  hintText: 'Mobile',
+                  hintText: 'Phone Number',
                 ),
               ),
             ),
@@ -52,8 +54,31 @@ class _SignInState extends State<SignIn> {
   }
 
   void _signIn() async {
-    // final ref = await FirebaseFirestore.instance.collection('users').add({'name': 'gaurav'});
-    // print(ref.id);
-    Get.to(const HomePage());
+    // final doc = await FirebaseFirestore.instance.collection('chat').get();
+    // final ref = doc.docs.first.get('user') as DocumentReference<Map<String, dynamic>>;
+    // final createdAt = doc.docs.first.get('createdAt') as Timestamp;
+    // print(ref.path);
+    // print(createdAt);
+    if (!_validate()) return;
+    await kUserProvider.login(
+        name: _nameCtrl.text, phoneNumber: _phoneNumber.text);
+    Navigator.of(context)
+        .push(CupertinoPageRoute(builder: (_) => const HomePage()));
+  }
+
+  bool _validate() {
+    if (_nameCtrl.text.isEmpty) {
+      showMsg("Please enter name");
+      return false;
+    }
+    if (_phoneNumber.text.isEmpty) {
+      showMsg("Please enter valid phone number");
+      return false;
+    }
+    return true;
+  }
+
+  void showMsg(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 }

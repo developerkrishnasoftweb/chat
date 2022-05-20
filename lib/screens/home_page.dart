@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:chat/constants/app_constants.dart';
+import 'package:chat/models/user_model.dart';
+import 'package:chat/screens/chat_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -29,8 +32,23 @@ class _HomePageState extends State<HomePage> {
           if (snapshot.hasData) {
             return ListView.builder(
               itemBuilder: (context, index) {
-                final doc = snapshot.data!.docs[index].data();
-                return Text('${doc}');
+                final user = UserModel.fromDoc(snapshot.data!.docs[index]);
+                return ListTile(
+                  title: Text(user.name),
+                  visualDensity: VisualDensity.compact,
+                  onTap: () {
+                    Navigator.of(context).push(CupertinoPageRoute(builder: (_) => ChatPage(user: user)));
+                  },
+                  dense: true,
+                  leading: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.grey,
+                      shape: BoxShape.circle,
+                    ),
+                    padding: const EdgeInsets.all(10),
+                    child: Text(user.name[0].toUpperCase()),
+                  ),
+                );
               },
               itemCount: snapshot.data!.size,
             );
@@ -41,10 +59,6 @@ class _HomePageState extends State<HomePage> {
           }
         },
         stream: FirebaseFirestore.instance.collection('users').snapshots(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _send,
-        child: const Icon(Icons.send),
       ),
     );
   }
