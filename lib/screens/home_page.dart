@@ -37,7 +37,8 @@ class _HomePageState extends State<HomePage> {
                   title: Text(user.name),
                   visualDensity: VisualDensity.compact,
                   onTap: () {
-                    Navigator.of(context).push(CupertinoPageRoute(builder: (_) => ChatPage(user: user)));
+                    Navigator.of(context).push(CupertinoPageRoute(
+                        builder: (_) => ChatPage(user: user)));
                   },
                   dense: true,
                   leading: Container(
@@ -58,7 +59,10 @@ class _HomePageState extends State<HomePage> {
             );
           }
         },
-        stream: FirebaseFirestore.instance.collection('users').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .where('fcmToken', isNotEqualTo: kUserProvider.fcmToken)
+            .snapshots(),
       ),
     );
   }

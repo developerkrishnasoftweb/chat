@@ -31,6 +31,7 @@ class _ChatPageState extends State<ChatPage> {
                 final data = snapshot.data!.docs[index].data();
                 return ListTile(
                   title: Text(data['message']),
+                  subtitle: Text('From - ${data['from']}, To - ${data['to']}'),
                   visualDensity: VisualDensity.compact,
                   dense: true,
                 );
@@ -45,8 +46,10 @@ class _ChatPageState extends State<ChatPage> {
         },
         stream: FirebaseFirestore.instance
             .collection('chat')
-            .where('from', isEqualTo: kUserProvider.id)
-            .where('to', isEqualTo: widget.user.id)
+            .where('senderId', isEqualTo: widget.user.id)
+            .where('receiverId', isEqualTo: kUserProvider.id)
+            .where('senderId', isEqualTo: kUserProvider.id)
+            .where('receiverId', isEqualTo: widget.user.id)
             .snapshots(),
       ),
       floatingActionButton: FloatingActionButton(
@@ -54,8 +57,8 @@ class _ChatPageState extends State<ChatPage> {
         onPressed: () {
           FirebaseFirestore.instance.collection('chat').add({
             "id": "",
-            "from": kUserProvider.id,
-            "to": widget.user.id,
+            "senderId": kUserProvider.id,
+            "receiverId": widget.user.id,
             "message": "Hello, World!",
             "mediaUrl": "",
             "createdAt": DateTime.now(),
