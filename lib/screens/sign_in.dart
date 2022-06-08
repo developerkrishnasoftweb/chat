@@ -61,7 +61,9 @@ class _SignInState extends State<SignIn> {
     // print(createdAt);
     if (!_validate()) return;
     await kUserProvider.login(
-        name: _nameCtrl.text, phoneNumber: _phoneNumber.text);
+      name: _nameCtrl.text,
+      phoneNumber: _phoneNumber.text,
+    );
     Navigator.of(context)
         .push(CupertinoPageRoute(builder: (_) => const HomePage()));
   }

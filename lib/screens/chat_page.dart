@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:chat/constants/app_constants.dart';
 import 'package:chat/models/user_model.dart';
+import 'package:chat/provider/chat_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -29,9 +33,11 @@ class _ChatPageState extends State<ChatPage> {
             return ListView.builder(
               itemBuilder: (context, index) {
                 final data = snapshot.data!.docs[index].data();
+                print(data);
                 return ListTile(
                   title: Text(data['message']),
-                  subtitle: Text('From - ${data['from']}, To - ${data['to']}'),
+                  subtitle: Text(
+                      'From - ${data['senderId']}, To - ${data['receiverId']}'),
                   visualDensity: VisualDensity.compact,
                   dense: true,
                 );
@@ -44,25 +50,17 @@ class _ChatPageState extends State<ChatPage> {
             );
           }
         },
-        stream: FirebaseFirestore.instance
-            .collection('chat')
-            .where('senderId', isEqualTo: widget.user.id)
-            .where('receiverId', isEqualTo: kUserProvider.id)
-            .where('senderId', isEqualTo: kUserProvider.id)
-            .where('receiverId', isEqualTo: widget.user.id)
-            .snapshots(),
+        stream: FirebaseFirestore.instance.collection('chat').snapshots(),
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.send),
         onPressed: () {
-          FirebaseFirestore.instance.collection('chat').add({
-            "id": "",
-            "senderId": kUserProvider.id,
-            "receiverId": widget.user.id,
-            "message": "Hello, World!",
-            "mediaUrl": "",
-            "createdAt": DateTime.now(),
-          });
+          ChatProvider.sendMessage(
+            senderId: kUserProvider.id!,
+            receiverId: widget.user.id!,
+            message: "Hello world",
+            mediaType: "text",
+          );
         },
       ),
     );
