@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+enum MessageStatus { sent, delivered, read }
+
 class ChatModel {
   String? id;
   final String senderId;
   final String receiverId;
   final String message;
   final String mediaType;
-  final DateTime createdAt;
+  MessageStatus status;
+  final Timestamp createdAt;
 
   ChatModel({
     this.id,
@@ -14,6 +17,7 @@ class ChatModel {
     required this.receiverId,
     required this.message,
     required this.mediaType,
+    this.status = MessageStatus.read,
     required this.createdAt,
   });
 
@@ -24,7 +28,8 @@ class ChatModel {
       receiverId: json['receiverId'],
       message: json['message'],
       mediaType: json['mediaType'],
-      createdAt: (json['createdAt'] as Timestamp).toDate(),
+      status: MessageStatus.values[json['status']],
+      createdAt: (json['createdAt'] as Timestamp),
     );
   }
 
@@ -35,7 +40,8 @@ class ChatModel {
       receiverId: snapshot.get('receiverId'),
       message: snapshot.get('message'),
       mediaType: snapshot.get('mediaType'),
-      createdAt: (snapshot.get('createdAt') as Timestamp).toDate(),
+      status: MessageStatus.values[snapshot.get('status')],
+      createdAt: snapshot.get('createdAt') as Timestamp,
     );
   }
 
@@ -45,7 +51,8 @@ class ChatModel {
     String? receiverId,
     String? message,
     String? mediaType,
-    DateTime? createdAt,
+    MessageStatus? status,
+    Timestamp? createdAt,
   }) {
     return ChatModel(
       id: id ?? this.id,
@@ -53,6 +60,7 @@ class ChatModel {
       receiverId: receiverId ?? this.receiverId,
       message: message ?? this.message,
       mediaType: mediaType ?? this.mediaType,
+      status: status ?? MessageStatus.read,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -64,6 +72,7 @@ class ChatModel {
     map['receiverId'] = receiverId;
     map['message'] = message;
     map['mediaType'] = mediaType;
+    map['status'] = status.index;
     map['createdAt'] = createdAt;
     return map;
   }

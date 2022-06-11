@@ -1,7 +1,5 @@
 import 'package:chat/constants/app_constants.dart';
-import 'package:chat/models/user_model.dart';
 import 'package:chat/screens/home_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -65,7 +63,7 @@ class _SignInState extends State<SignIn> {
       phoneNumber: _phoneNumber.text,
     );
     Navigator.of(context)
-        .push(CupertinoPageRoute(builder: (_) => const HomePage()));
+        .pushReplacement(CupertinoPageRoute(builder: (_) => const HomePage()));
   }
 
   bool _validate() {

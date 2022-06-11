@@ -61,7 +61,6 @@ class UserProvider extends ChangeNotifier {
             .update(_user!.toJson());
       }
     } else {
-      print("FCM token not found");
     }
   }
 }

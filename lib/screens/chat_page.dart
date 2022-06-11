@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:chat/constants/app_constants.dart';
 import 'package:chat/models/message_model.dart';
 import 'package:chat/models/user_model.dart';
@@ -18,6 +15,22 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _msg = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final _stream = FirebaseFirestore.instance.collection('chat').snapshots();
+
+  @override
+  void initState() {
+    super.initState();
+    _stream.listen((querySnap) {
+      for (var doc in querySnap.docs) {
+        final chat = ChatModel.fromDoc(doc)..status = MessageStatus.read;
+        FirebaseFirestore.instance
+            .collection('chat')
+            .doc(doc.id)
+            .update(chat.toJson());
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +55,15 @@ class _ChatPageState extends State<ChatPage> {
                             msg.receiverId == widget.user.id) ||
                         (msg.receiverId == kUserProvider.id &&
                             msg.senderId == widget.user.id);
-                  }).toList();
+                  }).toList()
+                    ..sort((a, b) {
+                      final createdAt1 = a.data()['createdAt'] as Timestamp;
+                      final createdAt2 = b.data()['createdAt'] as Timestamp;
+                      return createdAt1.compareTo(createdAt2);
+                    });
 
                   return ListView.builder(
+                    controller: _scrollController,
                     padding: const EdgeInsets.all(10),
                     itemBuilder: (context, index) {
                       final data = ChatModel.fromDoc(result[index]);
@@ -58,10 +77,7 @@ class _ChatPageState extends State<ChatPage> {
                   );
                 }
               },
-              stream: FirebaseFirestore.instance
-                  .collection('chat')
-                  .orderBy('createdAt')
-                  .snapshots(),
+              stream: _stream,
             ),
           ),
           _input(),
@@ -136,6 +152,7 @@ class _ChatPageState extends State<ChatPage> {
                 style: const TextStyle(
                   height: 1.5,
                 ),
+                textInputAction: TextInputAction.send,
                 onEditingComplete: _sendMessage,
                 decoration: const InputDecoration(
                   border: border,
@@ -168,16 +185,19 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     final msg = _msg.text.trim();
     _msg.clear();
     if (msg.isNotEmpty) {
-      ChatProvider.sendMessage(
+      await ChatProvider.sendMessage(
         senderId: kUserProvider.id!,
         receiverId: widget.user.id!,
         message: msg,
         mediaType: "text",
       );
     }
+    await Future.delayed(const Duration(seconds: 1));
+    _scrollController.animateTo(_scrollController.position.maxScrollExtent,
+        duration: const Duration(seconds: 200), curve: Curves.easeIn);
   }
 }

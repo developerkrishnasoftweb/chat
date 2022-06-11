@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:chat/constants/app_constants.dart';
 import 'package:chat/models/user_model.dart';
 import 'package:chat/screens/chat_page.dart';
@@ -65,12 +63,5 @@ class _HomePageState extends State<HomePage> {
             .snapshots(),
       ),
     );
-  }
-
-  void _send() {
-    FirebaseFirestore.instance.collection('chat').add({
-      'name': 'gaurav',
-      'dateTime': DateTime.now(),
-    });
   }
 }
