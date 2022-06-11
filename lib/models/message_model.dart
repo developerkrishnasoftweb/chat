@@ -22,7 +22,7 @@ class ChatModel {
       id: json['id'],
       senderId: json['senderId'],
       receiverId: json['receiverId'],
-      message: json['data'],
+      message: json['message'],
       mediaType: json['mediaType'],
       createdAt: (json['createdAt'] as Timestamp).toDate(),
     );
@@ -33,7 +33,7 @@ class ChatModel {
       id: snapshot.id,
       senderId: snapshot.get('senderId'),
       receiverId: snapshot.get('receiverId'),
-      message: snapshot.get('data'),
+      message: snapshot.get('message'),
       mediaType: snapshot.get('mediaType'),
       createdAt: (snapshot.get('createdAt') as Timestamp).toDate(),
     );
@@ -62,7 +62,7 @@ class ChatModel {
     map['id'] = id;
     map['senderId'] = senderId;
     map['receiverId'] = receiverId;
-    map['data'] = message;
+    map['message'] = message;
     map['mediaType'] = mediaType;
     map['createdAt'] = createdAt;
     return map;

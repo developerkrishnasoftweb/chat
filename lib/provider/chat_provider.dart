@@ -22,9 +22,9 @@ class ChatProvider {
       createdAt: DateTime.now(),
     );
     final doc = await _fireStore.collection(_collectionPath).add(chat.toJson());
-    chat.copyWith(id: doc.id);
+    chat.id = doc.id;
 
     // Adding the id to newly added collection id
-    _fireStore.collection(_collectionPath).doc(doc.id).update(chat.toJson());
+    await _fireStore.collection(_collectionPath).doc(doc.id).update(chat.toJson());
   }
 }
