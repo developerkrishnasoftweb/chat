@@ -1,5 +1,5 @@
-import 'package:chat/constants/app_constants.dart';
 import 'package:chat/models/user_model.dart';
+import 'package:chat/provider/user_provider.dart';
 import 'package:chat/screens/chat_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -35,8 +35,14 @@ class _HomePageState extends State<HomePage> {
                   title: Text(user.name),
                   visualDensity: VisualDensity.compact,
                   onTap: () {
-                    Navigator.of(context).push(CupertinoPageRoute(
-                        builder: (_) => ChatPage(user: user)));
+                    Navigator.of(context).push(
+                      CupertinoPageRoute(
+                        builder: (_) => ChatPage(
+                          senderId: UserProvider.id!,
+                          receiverId: user.id!,
+                        ),
+                      ),
+                    );
                   },
                   dense: true,
                   leading: Container(
@@ -59,7 +65,7 @@ class _HomePageState extends State<HomePage> {
         },
         stream: FirebaseFirestore.instance
             .collection('users')
-            .where('fcmToken', isNotEqualTo: kUserProvider.fcmToken)
+            .where('fcmToken', isNotEqualTo: UserProvider.fcmToken)
             .snapshots(),
       ),
     );

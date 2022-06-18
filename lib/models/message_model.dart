@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:encrypt/encrypt.dart';
 
 enum MessageStatus { sent, delivered, read }
 
@@ -10,6 +11,13 @@ class ChatModel {
   final String mediaType;
   MessageStatus status;
   final Timestamp createdAt;
+
+  /// Encryption key
+  static final _key = Key.fromUtf8('de9017e81fbbee6fa35a3bf975957b73');
+
+  /// Encryption IV
+  static final _iv = IV.fromUtf8('055fc1f93b4dacb1');
+  static final _encryption = Encrypter(AES(_key, mode: AESMode.cbc));
 
   ChatModel({
     this.id,
@@ -26,7 +34,8 @@ class ChatModel {
       id: json['id'],
       senderId: json['senderId'],
       receiverId: json['receiverId'],
-      message: json['message'],
+      message:
+          _encryption.decrypt(Encrypted.fromBase64(json['message']), iv: _iv),
       mediaType: json['mediaType'],
       status: MessageStatus.values[json['status']],
       createdAt: (json['createdAt'] as Timestamp),
@@ -38,7 +47,8 @@ class ChatModel {
       id: snapshot.id,
       senderId: snapshot.get('senderId'),
       receiverId: snapshot.get('receiverId'),
-      message: snapshot.get('message'),
+      message: _encryption
+          .decrypt(Encrypted.fromBase64(snapshot.get('message')), iv: _iv),
       mediaType: snapshot.get('mediaType'),
       status: MessageStatus.values[snapshot.get('status')],
       createdAt: snapshot.get('createdAt') as Timestamp,
@@ -70,7 +80,7 @@ class ChatModel {
     map['id'] = id;
     map['senderId'] = senderId;
     map['receiverId'] = receiverId;
-    map['message'] = message;
+    map['message'] = _encryption.encrypt(message, iv: _iv).base64;
     map['mediaType'] = mediaType;
     map['status'] = status.index;
     map['createdAt'] = createdAt;

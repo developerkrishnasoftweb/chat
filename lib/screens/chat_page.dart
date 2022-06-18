@@ -1,13 +1,17 @@
-import 'package:chat/constants/app_constants.dart';
 import 'package:chat/models/message_model.dart';
-import 'package:chat/models/user_model.dart';
 import 'package:chat/provider/chat_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({Key? key, required this.user}) : super(key: key);
-  final UserModel user;
+  const ChatPage({Key? key, required this.senderId, required this.receiverId})
+      : super(key: key);
+
+  /// Sender id depicts the current user who is going to send message
+  final String senderId;
+
+  /// Receiver id depicts the other user who is going to receive message
+  final String receiverId;
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -21,15 +25,15 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
-    _stream.listen((querySnap) {
-      for (var doc in querySnap.docs) {
-        final chat = ChatModel.fromDoc(doc)..status = MessageStatus.read;
-        FirebaseFirestore.instance
-            .collection('chat')
-            .doc(doc.id)
-            .update(chat.toJson());
-      }
-    });
+    // _stream.listen((querySnap) {
+    //   for (var doc in querySnap.docs) {
+    //     final chat = ChatModel.fromDoc(doc)..status = MessageStatus.read;
+    //     FirebaseFirestore.instance
+    //         .collection('chat')
+    //         .doc(doc.id)
+    //         .update(chat.toJson());
+    //   }
+    // });
   }
 
   @override
@@ -51,10 +55,10 @@ class _ChatPageState extends State<ChatPage> {
                 if (snapshot.hasData) {
                   final result = snapshot.data!.docs.where((snap) {
                     final msg = ChatModel.fromDoc(snap);
-                    return (msg.senderId == kUserProvider.id &&
-                            msg.receiverId == widget.user.id) ||
-                        (msg.receiverId == kUserProvider.id &&
-                            msg.senderId == widget.user.id);
+                    return (msg.senderId == widget.senderId &&
+                            msg.receiverId == widget.receiverId) ||
+                        (msg.receiverId == widget.senderId &&
+                            msg.senderId == widget.receiverId);
                   }).toList()
                     ..sort((a, b) {
                       final createdAt1 = a.data()['createdAt'] as Timestamp;
@@ -87,7 +91,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildMessageWidget(ChatModel chat) {
-    final sentMessage = chat.senderId == kUserProvider.id;
+    final sentMessage = chat.senderId == widget.senderId;
     const circular = Radius.circular(20);
     final size = MediaQuery.of(context).size;
     final primaryColor = Theme.of(context).primaryColor;
@@ -190,10 +194,10 @@ class _ChatPageState extends State<ChatPage> {
     _msg.clear();
     if (msg.isNotEmpty) {
       await ChatProvider.sendMessage(
-        senderId: kUserProvider.id!,
-        receiverId: widget.user.id!,
+        senderId: widget.senderId,
+        receiverId: widget.receiverId,
         message: msg,
-        mediaType: "text",
+        mediaType: "text/plain",
       );
     }
     await Future.delayed(const Duration(seconds: 1));

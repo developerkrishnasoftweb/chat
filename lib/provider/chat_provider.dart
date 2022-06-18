@@ -1,4 +1,7 @@
 import 'package:chat/models/message_model.dart';
+import 'package:chat/models/user_model.dart';
+import 'package:chat/provider/user_provider.dart';
+import 'package:chat/services/notification_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatProvider {
@@ -27,5 +30,22 @@ class ChatProvider {
         .collection(_collectionPath)
         .doc(doc.id)
         .update(chat.toJson());
+
+    final receiver = await _fireStore
+        .collection(UserProvider.collectionPath)
+        .where('id', isEqualTo: receiverId)
+        .snapshots()
+        .first;
+    if (receiver.size != 0) {
+      print(receiver.docs.first.data());
+      final user = UserModel.fromDoc(receiver.docs.first);
+      await NotificationServices.sendFCMMessage({
+        "to": [user.fcmToken],
+        "notification": {
+          "body": message,
+          "title": "You received a notification"
+        },
+      });
+    }
   }
 }
