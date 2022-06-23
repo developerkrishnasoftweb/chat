@@ -35,7 +35,6 @@ class NotificationServices {
     // initialize firebase
     var firebase = await Firebase.initializeApp();
 
-
     // on background message
     FirebaseMessaging.onBackgroundMessage(_handleBackgroundMessage);
 
