@@ -25,6 +25,7 @@ class _ChatPageState extends State<ChatPage> {
   final _stream = FirebaseFirestore.instance
       .collection(ChatProvider.collectionPath)
       .snapshots();
+
   late Stream<QuerySnapshot<Map<String, dynamic>>> _userStream;
 
   @override
@@ -35,12 +36,14 @@ class _ChatPageState extends State<ChatPage> {
         .where('id', isEqualTo: widget.receiverId)
         .snapshots();
     // _stream.listen((querySnap) {
-    //   for (var doc in querySnap.docs) {
-    //     final chat = ChatModel.fromDoc(doc)..status = MessageStatus.read;
-    //     FirebaseFirestore.instance
-    //         .collection('chat')
-    //         .doc(doc.id)
-    //         .update(chat.toJson());
+    //   if (querySnap.docs.isNotEmpty) {
+    //     for (var doc in querySnap.docs) {
+    //       final chat = ChatModel.fromDoc(doc)..status = MessageStatus.read;
+    //       FirebaseFirestore.instance
+    //           .collection('chat')
+    //           .doc(doc.id)
+    //           .update(chat.toJson());
+    //     }
     //   }
     // });
   }

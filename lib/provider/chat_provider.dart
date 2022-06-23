@@ -38,6 +38,7 @@ abstract class ChatProvider {
         .where('id', isEqualTo: receiverId)
         .snapshots()
         .first;
+    print(receiver.docs.first);
     if (receiver.size != 0) {
       final user = UserModel.fromDoc(receiver.docs.first);
       await NotificationServices.sendFCMMessage({
