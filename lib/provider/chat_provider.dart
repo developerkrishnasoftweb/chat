@@ -4,10 +4,12 @@ import 'package:chat/provider/user_provider.dart';
 import 'package:chat/services/notification_services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ChatProvider {
+abstract class ChatProvider {
+  ChatProvider._();
+
   static final _fireStore = FirebaseFirestore.instance;
 
-  static const _collectionPath = 'chat';
+  static const collectionPath = 'chat';
 
   static Future<void> sendMessage({
     required String senderId,
@@ -22,12 +24,12 @@ class ChatProvider {
       mediaType: mediaType,
       createdAt: Timestamp.now(),
     );
-    final doc = await _fireStore.collection(_collectionPath).add(chat.toJson());
+    final doc = await _fireStore.collection(collectionPath).add(chat.toJson());
     chat.id = doc.id;
 
     // Adding the id to newly added collection id
     await _fireStore
-        .collection(_collectionPath)
+        .collection(collectionPath)
         .doc(doc.id)
         .update(chat.toJson());
 
@@ -37,7 +39,6 @@ class ChatProvider {
         .snapshots()
         .first;
     if (receiver.size != 0) {
-      print(receiver.docs.first.data());
       final user = UserModel.fromDoc(receiver.docs.first);
       await NotificationServices.sendFCMMessage({
         "to": [user.fcmToken],

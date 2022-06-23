@@ -1,4 +1,5 @@
 import 'package:chat/provider/user_provider.dart';
+import 'package:chat/screens/chat_page.dart';
 import 'package:chat/screens/home_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   final TextEditingController _nameCtrl = TextEditingController();
+  final TextEditingController _fcmToken = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,18 @@ class _SignInState extends State<SignIn> {
               child: TextFormField(
                 controller: _nameCtrl,
                 decoration: const InputDecoration(
-                  hintText: 'Name',
+                  hintText: 'Name (Optional)',
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+            const Text("Connect with user"),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                controller: _fcmToken,
+                decoration: const InputDecoration(
+                  hintText: 'Enter User id token (Optional)',
                 ),
               ),
             ),
@@ -42,23 +55,29 @@ class _SignInState extends State<SignIn> {
   }
 
   void _signIn() async {
-    // final doc = await FirebaseFirestore.instance.collection('chat').get();
-    // final ref = doc.docs.first.get('user') as DocumentReference<Map<String, dynamic>>;
-    // final createdAt = doc.docs.first.get('createdAt') as Timestamp;
-    // print(ref.path);
-    // print(createdAt);
-    if (!_validate()) return;
     await UserProvider.init(name: _nameCtrl.text);
-    Navigator.of(context)
-        .pushReplacement(CupertinoPageRoute(builder: (_) => const HomePage()));
-  }
 
-  bool _validate() {
-    if (_nameCtrl.text.isEmpty) {
-      showMsg("Please enter name");
-      return false;
+    if (UserProvider.isLoggedIn) {
+      if (_fcmToken.text.isNotEmpty) {
+        final user = await UserProvider.getUserFrom(_fcmToken.text);
+        if (user == null) {
+          showMsg("User not found on the given token");
+          return;
+        }
+        Navigator.of(context).pushReplacement(
+          CupertinoPageRoute(
+            builder: (_) =>
+                ChatPage(senderId: UserProvider.id!, receiverId: user.id!),
+          ),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          CupertinoPageRoute(
+            builder: (_) => const HomePage(),
+          ),
+        );
+      }
     }
-    return true;
   }
 
   void showMsg(String msg) {

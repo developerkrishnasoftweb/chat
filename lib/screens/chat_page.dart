@@ -1,5 +1,7 @@
 import 'package:chat/models/message_model.dart';
+import 'package:chat/models/user_model.dart';
 import 'package:chat/provider/chat_provider.dart';
+import 'package:chat/provider/user_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -20,11 +22,18 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _msg = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final _stream = FirebaseFirestore.instance.collection('chat').snapshots();
+  final _stream = FirebaseFirestore.instance
+      .collection(ChatProvider.collectionPath)
+      .snapshots();
+  late Stream<QuerySnapshot<Map<String, dynamic>>> _userStream;
 
   @override
   void initState() {
     super.initState();
+    _userStream = FirebaseFirestore.instance
+        .collection(UserProvider.collectionPath)
+        .where('id', isEqualTo: widget.receiverId)
+        .snapshots();
     // _stream.listen((querySnap) {
     //   for (var doc in querySnap.docs) {
     //     final chat = ChatModel.fromDoc(doc)..status = MessageStatus.read;
@@ -38,55 +47,74 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Chat"),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-                if (snapshot.hasData) {
-                  final result = snapshot.data!.docs.where((snap) {
-                    final msg = ChatModel.fromDoc(snap);
-                    return (msg.senderId == widget.senderId &&
-                            msg.receiverId == widget.receiverId) ||
-                        (msg.receiverId == widget.senderId &&
-                            msg.senderId == widget.receiverId);
-                  }).toList()
-                    ..sort((a, b) {
-                      final createdAt1 = a.data()['createdAt'] as Timestamp;
-                      final createdAt2 = b.data()['createdAt'] as Timestamp;
-                      return createdAt1.compareTo(createdAt2);
-                    });
-
-                  return ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(10),
-                    itemBuilder: (context, index) {
-                      final data = ChatModel.fromDoc(result[index]);
-                      return _buildMessageWidget(data);
-                    },
-                    itemCount: result.length,
-                  );
-                } else {
-                  return const Center(
-                    child: Text("Data not found"),
-                  );
-                }
-              },
-              stream: _stream,
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _userStream,
+      builder: (_, userSnapshot) {
+        if (userSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (userSnapshot.hasData && userSnapshot.data!.docs.isNotEmpty) {
+          final user = UserModel.fromDoc(userSnapshot.data!.docs.first);
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(user.name),
             ),
-          ),
-          _input(),
-        ],
-      ),
+            body: Column(
+              children: [
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                    builder: (context, chatsSnapshot) {
+                      if (chatsSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                      if (chatsSnapshot.hasData) {
+                        final result = chatsSnapshot.data!.docs.where((snap) {
+                          final msg = ChatModel.fromDoc(snap);
+                          return (msg.senderId == widget.senderId &&
+                                  msg.receiverId == widget.receiverId) ||
+                              (msg.receiverId == widget.senderId &&
+                                  msg.senderId == widget.receiverId);
+                        }).toList()
+                          ..sort((a, b) {
+                            final createdAt1 =
+                                a.data()['createdAt'] as Timestamp;
+                            final createdAt2 =
+                                b.data()['createdAt'] as Timestamp;
+                            return createdAt1.compareTo(createdAt2);
+                          });
+
+                        return ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.all(10),
+                          itemBuilder: (context, index) {
+                            final data = ChatModel.fromDoc(result[index]);
+                            return _buildMessageWidget(data);
+                          },
+                          itemCount: result.length,
+                        );
+                      } else {
+                        return const Center(
+                          child: Text("Data not found"),
+                        );
+                      }
+                    },
+                    stream: _stream,
+                  ),
+                ),
+                _input(),
+              ],
+            ),
+          );
+        } else {
+          return const Center(
+            child: Text("Data not found"),
+          );
+        }
+      },
     );
   }
 

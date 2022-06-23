@@ -24,6 +24,11 @@ abstract class UserProvider {
   /// Creating new user if the fcm token is not registered already
   /// if registered then update the user
   static Future<void> init({String name = "Anonymous"}) async {
+    // Change the name to `Anonymous` if name is not null
+    if (name.isEmpty) {
+      name = "Anonymous";
+    }
+
     final token = await FirebaseMessaging.instance.getToken();
     if (token != null) {
       final users = await _fireStore
@@ -56,5 +61,18 @@ abstract class UserProvider {
             .update(_user!.toJson());
       }
     }
+  }
+
+  /// Get
+  static Future<UserModel?> getUserFrom(String token) async {
+    final users = await _fireStore
+        .collection(collectionPath)
+        .where("fcmToken", isEqualTo: token)
+        .get();
+
+    if (users.docs.isNotEmpty) {
+      return UserModel.fromDoc(users.docs.first);
+    }
+    return null;
   }
 }
