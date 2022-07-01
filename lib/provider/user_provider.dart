@@ -9,7 +9,7 @@ abstract class UserProvider {
 
   static const collectionPath = 'users';
 
-  static UserModel? _user;
+  static ChatUserModel? _user;
 
   static String? get id => _user?.id;
 
@@ -37,14 +37,14 @@ abstract class UserProvider {
           .get();
 
       if (users.docs.isNotEmpty) {
-        final user = UserModel.fromDoc(users.docs.first);
+        final user = ChatUserModel.fromDoc(users.docs.first);
         _user = user.copyWith(name: name);
         _fireStore
             .collection(collectionPath)
             .doc(user.id)
             .update(_user!.toJson());
       } else {
-        final user = UserModel(
+        final user = ChatUserModel(
           name: name,
           fcmToken: token,
           createdAt: DateTime.now(),
@@ -64,14 +64,14 @@ abstract class UserProvider {
   }
 
   /// Get
-  static Future<UserModel?> getUserFrom(String token) async {
+  static Future<ChatUserModel?> getUserFrom(String token) async {
     final users = await _fireStore
         .collection(collectionPath)
         .where("fcmToken", isEqualTo: token)
         .get();
 
     if (users.docs.isNotEmpty) {
-      return UserModel.fromDoc(users.docs.first);
+      return ChatUserModel.fromDoc(users.docs.first);
     }
     return null;
   }

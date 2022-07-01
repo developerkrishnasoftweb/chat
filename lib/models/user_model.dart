@@ -1,19 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class UserModel {
+class ChatUserModel {
   String? id;
   final String name;
   final String fcmToken;
   final DateTime createdAt;
 
-  UserModel(
+  ChatUserModel(
       {this.id,
       required this.name,
       required this.fcmToken,
       required this.createdAt});
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
+  factory ChatUserModel.fromJson(Map<String, dynamic> json) {
+    return ChatUserModel(
       id: json['id'],
       name: json['name'],
       fcmToken: json['fcmToken'],
@@ -21,8 +21,8 @@ class UserModel {
     );
   }
 
-  factory UserModel.fromDoc(QueryDocumentSnapshot snapshot) {
-    return UserModel(
+  factory ChatUserModel.fromDoc(QueryDocumentSnapshot snapshot) {
+    return ChatUserModel(
       id: snapshot.id,
       name: snapshot.get('name'),
       fcmToken: snapshot.get('fcmToken'),
@@ -30,12 +30,12 @@ class UserModel {
     );
   }
 
-  UserModel copyWith(
+  ChatUserModel copyWith(
       {String? id,
       String? name,
       String? fcmToken,
       DateTime? createdAt}) {
-    return UserModel(
+    return ChatUserModel(
       id: id ?? this.id,
       name: name ?? this.name,
       fcmToken: fcmToken ?? this.fcmToken,

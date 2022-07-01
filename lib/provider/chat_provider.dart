@@ -40,7 +40,7 @@ abstract class ChatProvider {
         .first;
     print(receiver.docs.first);
     if (receiver.size != 0) {
-      final user = UserModel.fromDoc(receiver.docs.first);
+      final user = ChatUserModel.fromDoc(receiver.docs.first);
       await NotificationServices.sendFCMMessage({
         "to": [user.fcmToken],
         "notification": {

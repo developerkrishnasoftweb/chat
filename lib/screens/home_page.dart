@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> {
           if (snapshot.hasData) {
             return ListView.builder(
               itemBuilder: (context, index) {
-                final user = UserModel.fromDoc(snapshot.data!.docs[index]);
+                final user = ChatUserModel.fromDoc(snapshot.data!.docs[index]);
                 return ListTile(
                   title: Text(user.name),
                   visualDensity: VisualDensity.compact,

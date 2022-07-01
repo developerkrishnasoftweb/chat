@@ -58,7 +58,7 @@ class _ChatPageState extends State<ChatPage> {
             child: CircularProgressIndicator(),
           );
         } else if (userSnapshot.hasData && userSnapshot.data!.docs.isNotEmpty) {
-          final user = UserModel.fromDoc(userSnapshot.data!.docs.first);
+          final user = ChatUserModel.fromDoc(userSnapshot.data!.docs.first);
           return Scaffold(
             appBar: AppBar(
               title: Text(user.name),
